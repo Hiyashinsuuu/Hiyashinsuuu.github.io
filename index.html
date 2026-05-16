@@ -10,12 +10,12 @@
   <style>
     :root {
       /* ── Ghibli Palette ── */
-      --cream: #F0EEDD;        /* Cotton Cloud — backgrounds */
-      --mist: #C1D2D6;         /* Misty — light surfaces */
-      --blue-main: #376E8C;    /* Ponyo blue — primary */
-      --blue-mid: #7D8F9D;     /* Totoro — secondary/muted */
-      --pink-main: #EA8897;    /* Bright — accent / highlights */
-      --green-accent: #81B857; /* Grassy Field — accent only */
+      --cream: #F0EEDD;      
+      --mist: #C1D2D6;      
+      --blue-main: #376E8C;   
+      --blue-mid: #7D8F9D;   
+      --pink-main: #EA8897;   
+      --green-accent: #81B857;
 
       /* Mapped roles */
       --forest-deep: var(--blue-main);
@@ -106,14 +106,14 @@
       z-index: 1;
     }
 
-    /* 2 — Sun (your sun.png, black bg treated as transparent via mix-blend-mode) */
+    /* 2 — Sun */
     #layer-sun {
       z-index: 2;
     }
     #layer-sun img {
       position: absolute;
       width: 220px; height: auto;
-      top: 20%; left: 47%;
+      top: 50%; left: 47%;
       transform: translateX(-30%);
     }
 
@@ -160,7 +160,6 @@
       object-fit: cover;
     }
 
-    /* Hero content — sits between mountain (z5) and front flowers (z6) */
     .hero-content {
       position: relative; z-index: 7;
       text-align: center;
@@ -599,7 +598,7 @@
 
     <!-- 2: Sun (mix-blend-mode:screen makes black bg invisible) -->
     <div class="parallax-layer" id="layer-sun" data-speed="0.6">
-      <img src="sun.png" alt="">
+      <img src="assets/sun.png" alt="">
     </div>
 
     <!-- 3: Cloud Left -->
