@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K.Portfolio</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ── Ghibli Palette ── */
+      --cream: #F0EEDD;        /* Cotton Cloud — backgrounds */
+      --mist: #C1D2D6;         /* Misty — light surfaces */
+      --blue-main: #376E8C;    /* Ponyo blue — primary */
+      --blue-mid: #7D8F9D;     /* Totoro — secondary/muted */
+      --pink-main: #EA8897;    /* Bright — accent / highlights */
+      --green-accent: #81B857; /* Grassy Field — accent only */
+
+      /* Mapped roles */
+      --forest-deep: var(--blue-main);
+      --forest-mid: #4a7e9a;
+      --forest-light: var(--blue-mid);
+      --gold: var(--pink-main);
+      --accent: var(--green-accent);
+      --ink: #1e2c35;
+      --card-bg: rgba(240, 238, 221, 0.9);
+      --shadow: 0 8px 32px rgba(30, 44, 53, 0.13);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      color: var(--ink);
+      background: var(--cream);
+      overflow-x: hidden;
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4' fill='%23EA8897' opacity='0.8'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23EA8897' stroke-width='1.5' opacity='0.4'/%3E%3C/svg%3E") 12 12, auto;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      padding: 18px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(240,238,221,0.75);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(234,136,151,0.2);
+      transition: all 0.4s ease;
+    }
+    nav.scrolled {
+      padding: 12px 48px;
+      background: rgba(240,238,221,0.97);
+      box-shadow: 0 4px 24px rgba(44,36,22,0.1);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--forest-deep);
+      letter-spacing: 0.02em;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--forest-deep);
+      position: relative;
+      transition: color 0.3s;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 2px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ─── PARALLAX HERO ─── */
+    #hero {
+      height: 100vh; position: relative;
+      overflow: hidden; display: flex;
+      align-items: center; justify-content: center;
+    }
+
+    /* Base layer: all layers share this */
+    .parallax-layer {
+      position: absolute;
+      width: 100%; height: 130%;
+      top: -15%; left: 0;
+      will-change: transform;
+      pointer-events: none;
+    }
+
+    /* 1 — Sky background */
+    #layer-sky {
+      background: linear-gradient(180deg, #5ecde8 0%, #7dd8ec 40%, #a8e4f0 70%, #c8eeee 100%);
+      z-index: 1;
+    }
+
+    /* 2 — Sun (your sun.png, black bg treated as transparent via mix-blend-mode) */
+    #layer-sun {
+      z-index: 2;
+    }
+    #layer-sun img {
+      position: absolute;
+      width: 220px; height: auto;
+      top: 20%; left: 47%;
+      transform: translateX(-30%);
+    }
+
+    /* 3 — Cloud left */
+    #layer-cloud-left {
+      z-index: 3;
+    }
+    #layer-cloud-left img {
+      position: absolute;
+      width: 40%; height: auto;
+      top: 8%; left: -2%;
+    }
+
+    /* 4 — Cloud right */
+    #layer-cloud-right {
+      z-index: 4;
+
+    }
+    #layer-cloud-right img {
+      position: absolute;
+      width: 45%; height: auto;
+      top: 4%; right: -2%;
+    }
+
+    /* 5 — Flower mountain background (midground) */
+    #layer-mountain {
+      z-index: 5;
+    }
+    #layer-mountain img {
+      position: absolute;
+      width: 100%; height: auto;
+      bottom: -30%; left: 0;
+      object-fit: cover;
+    }
+
+    /* 6 — Front flowers (foreground) */
+    #layer-flowers {
+      z-index:5;
+    }
+    #layer-flowers img {
+      position: absolute;
+      width: 50%; height: auto;
+      bottom: 5%; left: -5%;
+      object-fit: cover;
+    }
+
+    /* Hero content — sits between mountain (z5) and front flowers (z6) */
+    .hero-content {
+      position: relative; z-index: 7;
+      text-align: center;
+      animation: fadeUp 1.2s ease 0.3s both;
+      margin-bottom: 10vh;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #1a4a2e;
+      font-weight: 700;
+      margin-bottom: 12px;
+      opacity: 0.85;
+      text-shadow: 0 1px 8px rgba(255,255,255,0.6);
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 700;
+      color: #1a3a50;
+      line-height: 1.05;
+      text-shadow: 1px 2px 20px rgba(255,255,255,0.7), 0 0 40px rgba(255,255,255,0.4);
+    }
+    .hero-title em {
+      font-style: italic;
+      color: #c87820;
+    }
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 1.05rem;
+      color: #2a5a40;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-shadow: 0 1px 8px rgba(255,255,255,0.7);
+    }
+    .hero-cta {
+      margin-top: 36px;
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn {
+      padding: 13px 32px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: #1a4a2e;
+      color: var(--cream);
+      box-shadow: 0 4px 20px rgba(26,74,46,0.35);
+    }
+    .btn-primary:hover {
+      background: #2a6a42;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(26,74,46,0.4);
+    }
+    .btn-outline {
+      background: rgba(255,255,255,0.25);
+      color: #1a3a50;
+      border: 2px solid #1a3a50;
+      backdrop-filter: blur(4px);
+    }
+    .btn-outline:hover {
+      background: #1a3a50;
+      color: var(--cream);
+      transform: translateY(-3px);
+    }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 10; text-align: center;
+      animation: bounce 2s ease infinite;
+    }
+    .scroll-hint span {
+      display: block; font-size: 0.7rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--forest-deep); opacity: 0.6; margin-bottom: 8px;
+    }
+    .scroll-hint svg { opacity: 0.5; }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      position: relative;
+      padding: 100px 0;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* section dividers - organic wavy */
+    .wave-top {
+      position: absolute; top: -2px; left: 0; width: 100%;
+      overflow: hidden; line-height: 0;
+    }
+    .wave-top svg { display: block; }
+
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      color: var(--forest-deep);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-line {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      border-radius: 2px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── ABOUT ─── */
+    #about { background: var(--cream); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .about-image-wrap {
+      position: relative;
+    }
+    .about-frame {
+      position: absolute; top: -12px; left: -12px;
+      right: 12px; bottom: 12px;
+      border: 2px solid rgba(200,146,42,0.3);
+      border-radius: 24px;
+      pointer-events: none;
+    }
+    .about-text p {
+      font-size: 1rem; line-height: 1.9;
+      color: #4a3f30;
+      margin-bottom: 20px;
+    }
+    .about-text strong { color: var(--forest-deep); }
+
+    .skills-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-top: 28px;
+    }
+    .skill-tag {
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1.5px solid;
+      transition: all 0.25s;
+    }
+    .skill-tag:nth-child(3n+1) { color: var(--forest-deep); border-color: var(--forest-deep); }
+    .skill-tag:nth-child(3n+2) { color: var(--gold); border-color: var(--gold); }
+    .skill-tag:nth-child(3n) { color: var(--accent); border-color: var(--accent); }
+    .skill-tag:hover { background: var(--forest-deep); color: white; border-color: var(--forest-deep); transform: translateY(-2px); }
+
+    /* ─── PROJECTS ─── */
+    #projects {
+      background: linear-gradient(180deg, #dce8ed 0%, #C1D2D6 100%);
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+    }
+    .project-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+      border: 1px solid rgba(200,146,42,0.15);
+    }
+    .project-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 48px rgba(44,36,22,0.18);
+    }
+    .project-img {
+      width: 100%; height: 200px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-img p {
+      color: white; font-size: 0.72rem;
+      letter-spacing: 0.08em; font-weight: 700;
+      opacity: 0.85; text-align: center;
+    }
+    .pi-1 { background: linear-gradient(135deg, #376E8C, #1e4d66); }
+    .pi-2 { background: linear-gradient(135deg, #EA8897, #c86070); }
+    .pi-3 { background: linear-gradient(135deg, #81B857, #5a8a38); }
+
+    .project-body { padding: 24px; }
+    .project-tag {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 8px;
+    }
+    .project-body h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; color: var(--forest-deep);
+      margin-bottom: 10px;
+    }
+    .project-body p {
+      font-size: 0.9rem; line-height: 1.7;
+      color: #5a4f3e; margin-bottom: 18px;
+    }
+    .project-stack {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 20px;
+    }
+    .stack-badge {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 4px 12px; border-radius: 20px;
+      background: rgba(45,90,61,0.1);
+      color: var(--forest-deep);
+    }
+    .project-links { display: flex; gap: 12px; }
+    .proj-link {
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      text-decoration: none;
+      color: var(--forest-deep);
+      display: flex; align-items: center; gap: 6px;
+      transition: color 0.25s;
+    }
+    .proj-link:hover { color: var(--gold); }
+
+    /* ─── EDUCATION ─── */
+    #education { background: var(--cream); }
+
+    .education-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 780px;
+    }
+    .edu-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 28px 32px;
+      border: 1px solid rgba(55,110,140,0.15);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 24px;
+      align-items: start;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .edu-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(30,44,53,0.15);
+    }
+    .edu-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg, var(--blue-main), var(--pink-main));
+    }
+    .edu-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: rgba(55,110,140,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .edu-body {}
+    .edu-year {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 4px;
+    }
+    .edu-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; color: var(--forest-deep);
+      margin-bottom: 4px;
+    }
+    .edu-school {
+      font-size: 0.88rem; color: #5a6e7a;
+      font-weight: 400; margin-bottom: 10px;
+    }
+    .edu-desc {
+      font-size: 0.88rem; line-height: 1.7;
+      color: #5a4f3e;
+    }
+    .edu-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 12px;
+    }
+    .edu-tag {
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px;
+      background: rgba(55,110,140,0.1);
+      color: var(--blue-main);
+    }
+
+    /* ─── CONTACT ─── */
+    #contact {
+      background: #1e3d52;
+      color: var(--cream);
+      text-align: center;
+    }
+    #contact .section-label { color: rgba(250,243,224,0.5); }
+    #contact .section-title { color: var(--cream); }
+    #contact .section-line { background: linear-gradient(90deg, rgba(200,146,42,0.8), transparent); }
+    #contact p {
+      font-size: 1rem; line-height: 1.8;
+      opacity: 0.8; max-width: 520px;
+      margin: 0 auto 40px;
+    }
+    .contact-links {
+      display: flex; justify-content: center;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .contact-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 28px;
+      background: rgba(250,243,224,0.1);
+      border: 1px solid rgba(250,243,224,0.2);
+      border-radius: 40px;
+      text-decoration: none;
+      color: var(--cream);
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.08em;
+      transition: all 0.3s;
+    }
+    .contact-link:hover {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: var(--ink);
+      transform: translateY(-3px);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #142839;
+      color: rgba(250,243,224,0.4);
+      text-align: center;
+      padding: 24px;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+    }
+    footer span { color: var(--gold); opacity: 0.7; }
+
+    /* ─── LEAF PARTICLES ─── */
+    .leaf {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999;
+      font-size: 16px;
+      opacity: 0;
+      animation: leafFall linear infinite;
+    }
+    @keyframes leafFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.4; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ─── REVEAL ANIMATION ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─── MOBILE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 24px; }
+      .nav-links { gap: 18px; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .container { padding: 0 24px; }
+      section { padding: 72px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-logo">K<span>.</span>Portfolio</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <!-- 1: Sky -->
+    <div class="parallax-layer" id="layer-sky" data-speed="0.05"></div>
+
+    <!-- 2: Sun (mix-blend-mode:screen makes black bg invisible) -->
+    <div class="parallax-layer" id="layer-sun" data-speed="0.6">
+      <img src="sun.png" alt="">
+    </div>
+
+    <!-- 3: Cloud Left -->
+    <div class="parallax-layer" id="layer-cloud-left" data-speed="0.3">
+      <img src="assets/cloud left.png" alt="">
+    </div>
+
+    <!-- 4: Cloud Right -->
+    <div class="parallax-layer" id="layer-cloud-right" data-speed="0.2">
+      <img src="assets/cloud right.png" alt="">
+    </div>
+
+    <!-- 5: Flower mountain background (midground) -->
+    <div class="parallax-layer" id="layer-mountain" data-speed="0.4">
+      <img src="assets/flower_mountain back.png" alt="">
+    </div>
+
+    <!-- Content (z-index 7, above mountain, below front flowers) -->
+    <div class="hero-content">
+      <p class="hero-eyebrow">✦ Portfolio ✦</p>
+      <h1 class="hero-title">Keissha<br><em>Canios</em></h1>
+      <p class="hero-sub">Full-Stack Developer · Security Enthusiast · Creative Technologist</p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn btn-primary">View Projects</a>
+        <a href="#contact" class="btn btn-outline">Get In Touch</a>
+      </div>
+    </div>
+
+    <!-- 6: Front flowers (foreground — in front of text) -->
+    <div class="parallax-layer" id="layer-flowers" data-speed="0.5">
+      <img src="assets/front flowers.png" alt="">
+    </div>
+
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 4v12M5 11l5 5 5-5" stroke="#1a4a2e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-wrap reveal">
+          <div class="about-frame"></div>
+            <img src="assets/IMG_3657.jpeg" style="width:100%;border-radius:20px;object-fit:cover;height:420px;">
+        </div>
+
+        <div class="about-text reveal reveal-delay-2">
+          <p class="section-label">About Me</p>
+          <h2 class="section-title">Crafting code,<br>one story at a time.</h2>
+          <div class="section-line"></div>
+          <p>Hi! I'm <strong>Keissha</strong>, a Computer Science student based in <strong>Cagayan de Oro</strong> with a love for building things that are both functional and beautiful.</p>
+          <p>I work across the full stack—from Django + PostgreSQL backends to React frontends—and I'm deeply curious about cybersecurity and game developement. When I'm not coding, I'm designing in Canva, Ibis Paint X, or Photoshop.</p>
+
+          <div class="skills-grid">
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">Django</span>
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">PostgreSQL</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">Git</span>
+            <span class="skill-tag">Figma / Canva / Photoshop</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="wave-top">
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,30 Q360,0 720,30 Q1080,60 1440,20 L1440,0 L0,0 Z" fill="#F0EEDD"/>
+      </svg>
+    </div>
+    <div class="container">
+      <p class="section-label reveal">Projects</p>
+      <h2 class="section-title reveal">Things I've Built</h2>
+      <div class="section-line reveal"></div>
+
+      <div class="projects-grid">
+
+        <!-- PROJECT 1 — Alisto -->
+        <div class="project-card reveal">
+          <img src="assets/Alisto DEMO.gif" style="width:100%;height:200px;object-fit:cover;">
+          <div class="project-body">
+            <p class="project-tag">Web Application</p>
+            <h3>Alisto</h3>
+            <p>A task management system built with Django and PostgreSQL, featuring a React frontend for an intuitive and responsive user experience.</p>
+            <div class="project-stack">
+              <span class="stack-badge">Django</span>
+              <span class="stack-badge">PostgreSQL</span>
+              <span class="stack-badge">React</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/Hiyashinsuuu/Alisto-to-do-list-Project.git" class="proj-link" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card reveal reveal-delay-1">
+          <img src="assets/Wallstreet.png" style="width:100%;height:200px;object-fit:cover;">
+          <div class="project-body">
+            <p class="project-tag">Full Stack · Reservation System</p>
+            <h3>WallStreet Sport Court</h3>
+            <p>A court reservation system for a sports facility, built with a PostgreSQL + Express backend and a React frontend.</p>
+            <div class="project-stack">
+              <span class="stack-badge">PostgreSQL</span>
+              <span class="stack-badge">Express</span>
+              <span class="stack-badge">React</span>
+              <span class="stack-badge">Node.js</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/Hiyashinsuuu/WallStreet-Sport-SoftEng.git" class="proj-link" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                GitHub
+              </a>
+              <a href="https://wallstreetsport.vercel.app/" class="proj-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                Live Demo
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card reveal reveal-delay-2">
+          <img src="assets/dswd.png" style="width:100%;height:200px;object-fit:cover;">
+          <div class="project-body">
+            <p class="project-tag">Data Management · Gov't System</p>
+            <h3>DSWD-X Data Module</h3>
+            <p>An integrated data management module for DSWD Region X, built with Django for efficient handling of social welfare records.</p>
+            <div class="project-stack">
+              <span class="stack-badge">Django</span>
+              <span class="stack-badge">PostgreSQL</span>
+              <span class="stack-badge">Python</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="proj-link">
+                This is private due to confidentiality agreements
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- EDUCATION -->
+  <section id="education">
+    <div class="wave-top">
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,20 Q360,60 720,30 Q1080,0 1440,40 L1440,0 L0,0 Z" fill="#C1D2D6"/>
+      </svg>
+    </div>
+    <div class="container">
+      <p class="section-label reveal">Background</p>
+      <h2 class="section-title reveal">Education</h2>
+      <div class="section-line reveal"></div>
+
+      <div class="education-list">
+
+        <!-- ✏️ EDIT: Update degree, school, year, and description as needed -->
+        <div class="edu-card reveal">
+          <div class="edu-icon"><img src="assets/ustp.png" style="width:36px;height:36px;object-fit:contain;border-radius:6px;"></div>
+          <div class="edu-body">
+            <p class="edu-year">2023 – Present</p>
+            <h3>Bachelor of Science in Computer Science</h3>
+            <p class="edu-school">University of Science and Technology of Southern Philippines (USTP) · Cagayan de Oro</p>
+            <p class="edu-desc">Coursework spanning software engineering, data structures, information assurance & security, parallel computing, and database management. Active in group projects and collaborative academic work.</p>
+            <div class="edu-tags">
+              <span class="edu-tag">Information Security</span>
+              <span class="edu-tag">Parallel Computing</span>
+              <span class="edu-tag">Software Engineering</span>
+              <span class="edu-tag">Database Systems</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✏️ Add more edu-cards below for Senior High, other schools, etc. -->
+        <div class="edu-card reveal reveal-delay-1">
+          <div class="edu-icon"><img src="assets/xu.png" style="width:36px;height:36px;object-fit:contain;border-radius:6px;"></div>
+          <div class="edu-body">
+            <p class="edu-year">2021 – 2023</p>
+            <h3>Senior High School · STEM</h3>
+            <p class="edu-school">Xavier Ateneo Senior High School (XU-SHS) · Cagayan de Oro</p>
+            <p class="edu-desc">Completed the STEM strand at Xavier Ateneo, building a strong foundation in mathematics, sciences, and research. Developed analytical and problem-solving skills that laid the groundwork for pursuing Computer Science in college.</p> 
+            <div class="edu-tags">
+              <span class="edu-tag">STEM</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="wave-top">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,40 Q360,80 720,40 Q1080,0 1440,50 L1440,0 L0,0 Z" fill="#F0EEDD"/>
+      </svg>
+    </div>
+    <div class="container" style="text-align:center; padding-top: 60px;">
+      <p class="section-label reveal">Get In Touch</p>
+      <h2 class="section-title reveal" style="color:var(--cream)">Let's work together.</h2>
+      <div class="section-line reveal" style="margin: 0 auto 32px;"></div>
+      <p class="reveal">Whether it's a project, collaboration, or just to say hi — my inbox is always open.</p>
+
+      <div class="contact-links reveal">
+        <a href="mailto: keisshacanios@gmail.com" class="contact-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          keisshacanios@gmail.com
+        </a>
+        <a href="https://github.com/Hiyashinsuuu" class="contact-link" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+         GitHub
+        </a>
+        <a href="https://drive.google.com/file/d/1rPbTTshxmqHD9a2U1BPu9fy6WsCcL-L5/view?" class="contact-link" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6"/></svg> 
+         My Resume
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Portfolio ni <span>Keissha</span> · <span>© 2025</span></p>
+  </footer>
+
+  <script>
+    // ─── PARALLAX ───
+    const layers = document.querySelectorAll('.parallax-layer');
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.pageYOffset;
+          layers.forEach(layer => {
+            const speed = parseFloat(layer.dataset.speed) || 0;
+            layer.style.transform = `translateY(${scrollY * speed}px)`;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // ─── NAVBAR SCROLL ───
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ─── SCROLL REVEAL ───
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // ─── FLOATING LEAVES ───
+    const leafEmojis = ['🍃', '🍂', '🌿', '🍀'];
+    function createLeaf() {
+      const leaf = document.createElement('div');
+      leaf.classList.add('leaf');
+      leaf.textContent = leafEmojis[Math.floor(Math.random() * leafEmojis.length)];
+      leaf.style.left = Math.random() * 100 + 'vw';
+      leaf.style.fontSize = (Math.random() * 12 + 10) + 'px';
+      const duration = Math.random() * 8 + 8;
+      leaf.style.animation = `leafFall ${duration}s linear forwards`;
+      leaf.style.opacity = 0;
+      document.body.appendChild(leaf);
+      setTimeout(() => leaf.remove(), duration * 1000);
+    }
+    // Spawn a leaf every 3 seconds
+    setInterval(createLeaf, 3000);
+    createLeaf(); // immediate first leaf
+
+    // ─── SMOOTH NAV LINKS ───
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
